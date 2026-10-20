@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<title>Isla &amp; Aiden Character Maker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Baloo+2:wght@500;700&display=swap">
+<style>
+/* Layout: a sticky "workbench" preview (the blocky character standing next to Isla and Aiden) beside
+   a stepped list of big, tappable choices; on phones the preview sits on top and the steps scroll below. */
+:root {
+  --bg: #f6efe0;          /* parchment, like the word cards */
+  --panel: #fffaf0;
+  --ink: #2b2016;
+  --muted: #7a6650;
+  --frame: #2b2016;       /* the dark card border */
+  --wood: #c6985a;
+  --accent: #1f5ea8;      /* word-card blue */
+  --pop: #e2502a;         /* quiz red-orange */
+  --sun: #ffd84a;         /* counter yellow */
+  --line: #e2d5bb;
+  --sel: #1f5ea8;
+  --stage: #bfe3f6;
+  --grass: #79b14a;
+  --display: "Silkscreen", "Courier New", monospace;
+  --body: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1d1914; --panel: #2a241c; --ink: #f3e9d6; --muted: #bfa98a; --frame: #0d0b08; --wood: #8f6a3a;
+  --accent: #6aa8f0; --pop: #ff7a52; --sun: #ffd84a; --line: #43392b; --sel: #6aa8f0; --stage: #2f4e66; --grass: #4f7d2c;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #1d1914; --panel: #2a241c; --ink: #f3e9d6; --muted: #bfa98a; --frame: #0d0b08; --wood: #8f6a3a;
+  --accent: #6aa8f0; --pop: #ff7a52; --sun: #ffd84a; --line: #43392b; --sel: #6aa8f0; --stage: #2f4e66; --grass: #4f7d2c;
+  color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.4;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 40px }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 24px; align-items: start }
+header.top { max-width: 1120px; margin: 0 auto 14px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(22px, 4vw, 32px); margin: 0; letter-spacing: .5px; text-wrap: balance }
+h1 span { color: var(--pop) }
+.tag { color: var(--muted); margin: 0 }
+.bench { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 10px); background: var(--panel); border: 4px solid var(--frame);
+  box-shadow: 6px 6px 0 var(--wood); padding: 12px }
+.stage { background: var(--stage); border: 3px solid var(--frame); position: relative; aspect-ratio: 4 / 3; width: 100%; max-width: 100% }
+.stage canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated }
+.who { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap }
+.who b { font-family: var(--display); font-weight: 400; font-size: 20px }
+.who small { color: var(--muted) }
+.steps { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; padding: 0; list-style: none }
+.steps button { font: 700 15px var(--body); border: 3px solid var(--frame); background: var(--panel); color: var(--ink); padding: 6px 12px; cursor: pointer }
+.steps button[aria-current="step"] { background: var(--sun); color: #2b2016 }
+.steps button .n { font-family: var(--display); margin-right: 4px }
+section.step { background: var(--panel); border: 4px solid var(--frame); padding: 16px 16px 18px; display: grid; gap: 18px }
+section.step h2 { font-family: var(--display); font-weight: 400; font-size: 20px; margin: 0; color: var(--accent) }
+.field { display: grid; gap: 8px; min-width: 0 }
+.field > label, .field > .lab { font-weight: 700 }
+.field .hint { color: var(--muted); font-size: 14px; margin-top: -6px }
+input[type=text], input[type=number], textarea { font: 500 18px var(--body); color: var(--ink); background: var(--bg); border: 3px solid var(--frame);
+  padding: 8px 10px; width: 100%; max-width: 420px; border-radius: 0 }
+input:focus-visible, button:focus-visible, textarea:focus-visible { outline: 3px solid var(--pop); outline-offset: 2px }
+.chips { display: flex; flex-wrap: wrap; gap: 8px }
+.chip { font: 700 16px var(--body); color: var(--ink); background: var(--bg); border: 3px solid var(--line); padding: 6px 12px; cursor: pointer; min-height: 44px }
+.chip[aria-pressed="true"] { border-color: var(--sel); background: var(--sel); color: #fff }
+.sw { display: flex; flex-wrap: wrap; gap: 8px }
+.sw button { width: 44px; height: 44px; border: 3px solid var(--frame); cursor: pointer; position: relative; padding: 0 }
+.sw button[aria-pressed="true"]::after { content: ""; position: absolute; inset: -8px; border: 3px solid var(--sel) }
+.sw button.none { background: repeating-linear-gradient(45deg, var(--bg) 0 6px, var(--line) 6px 12px) }
+.stepper { display: flex; align-items: center; gap: 10px }
+.stepper button { width: 44px; height: 44px; font: 700 22px var(--body); border: 3px solid var(--frame); background: var(--bg); color: var(--ink); cursor: pointer }
+.stepper output { font-family: var(--display); font-size: 24px; min-width: 2.5ch; text-align: center }
+.nav { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap }
+.btn { font: 700 17px var(--body); border: 3px solid var(--frame); background: var(--accent); color: #fff; padding: 10px 18px; cursor: pointer; box-shadow: 3px 3px 0 var(--frame) }
+.btn.ghost { background: var(--panel); color: var(--ink) }
+.btn.big { background: var(--pop) }
+.btn:disabled { opacity: .45; cursor: not-allowed }
+.btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--frame) }
+.rules { border: 3px dashed var(--line); padding: 10px 14px; color: var(--muted); font-size: 15px }
+.rules ul { margin: 6px 0 0; padding-left: 20px }
+.ok { display: flex; gap: 10px; align-items: flex-start; font-weight: 700 }
+.ok input { width: 26px; height: 26px; margin-top: 2px; accent-color: var(--pop) }
+pre.code { background: var(--bg); border: 3px solid var(--line); padding: 10px; white-space: pre-wrap; word-break: break-word; font: 14px/1.45 ui-monospace, Menlo, Consolas, monospace; margin: 0; max-height: 260px; overflow: auto }
+.status { font-weight: 700; color: var(--accent); min-height: 1.4em }
+.fa { direction: rtl; text-align: right; font-family: Tahoma, "Segoe UI", sans-serif }
+@media (max-width: 820px) {
+  .wrap { grid-template-columns: minmax(0, 1fr) }
+  .bench { padding: 8px; box-shadow: 4px 4px 0 var(--wood) }
+  .stage { aspect-ratio: 16 / 9 }
+}
+@media (prefers-reduced-motion: reduce) { .btn:active:not(:disabled) { transform: none } }
+</style>
+
+<div id="noRun" style="max-width:640px;margin:0 auto 16px;padding:14px 16px;border:4px solid #2b2016;background:#ffd84a;color:#2b2016;font-size:18px;line-height:1.45"><b>This preview can't run the Character Maker.</b><br>On an iPhone, files opened from WhatsApp or Files show only a preview. Open this link in Safari instead:<br><b style="word-break:break-all">https://claude.ai/artifact/5t4gFF7jvT12G4zRYyypf4</b><br>(Press and hold the link, then Copy, and paste it into Safari.)</div>
+<header class="top">
+  <h1>Isla &amp; Aiden <span>Character Maker</span></h1>
+  <p class="tag">Make a new friend for the show. Pick everything, then send it back.</p>
+</header>
+
+<div class="wrap">
+  <aside class="bench" aria-label="Your character">
+    <div class="stage"><canvas id="stage" width="640" height="480" aria-label="Preview of your character next to Aiden and Isla"></canvas></div>
+    <div class="who"><b id="whoName">New friend</b><small id="whoLine">girl · age 7</small></div>
+  </aside>
+
+  <main>
+    <ol class="steps" id="steps"></ol>
+    <form id="form" autocomplete="off"></form>
+  </main>
+</div>
+
+<script>
+(() => {
+"use strict";
+{ const nr = document.getElementById("noRun"); if (nr) nr.hidden = true; }   // the script runs, so the help box is not needed
+// ---------------------------------------------------------------- choices
+const COLORS = { red:"#d8352f", orange:"#f08a24", yellow:"#f6cf3a", green:"#3f9e4a", teal:"#1f9e95", lightblue:"#8cc8ef",
+  blue:"#2f6fd0", navy:"#22305e", purple:"#7d4bb8", pink:"#f08fb8", white:"#f4f4f2", grey:"#8d9196", black:"#232326", brown:"#7a4e2d" };
+const COLOR_NAMES = { red:"red", orange:"orange", yellow:"yellow", green:"green", teal:"teal", lightblue:"light blue", blue:"blue",
+  navy:"navy", purple:"purple", pink:"pink", white:"white", grey:"grey", black:"black", brown:"brown" };
+const SKIN = ["#f6dcc6", "#eec4a4", "#e3ae88", "#cf9468", "#b8794e", "#9a5f3b", "#7a4628", "#5a321d"];
+const HAIR = { black:"#1e1a18", darkbrown:"#3b2618", brown:"#6b4628", lightbrown:"#9a6b40", blonde:"#e2c071",
+  red:"#b8502a", grey:"#9a9a9e", white:"#ecebe6" };
+const HAIR_NAMES = { black:"black", darkbrown:"dark brown", brown:"brown", lightbrown:"light brown", blonde:"blonde", red:"red", grey:"grey", white:"white" };
+const EYES = { brown:"#5a3a22", darkbrown:"#2e1d14", hazel:"#8a6a2c", green:"#3d8a4a", blue:"#3a76c8", grey:"#7f8a94" };
+const EYE_NAMES = { brown:"brown", darkbrown:"dark brown", hazel:"hazel", green:"green", blue:"blue", grey:"grey" };
+const HEIGHTS = [
+  ["shorter", "Shorter than Aiden", .68], ["aiden", "Like Aiden", .76], ["between", "Between Aiden and Isla", .83],
+  ["isla", "Like Isla", .9], ["taller", "Taller than Isla", .95], ["adult", "Grown-up", 1.0], ["tall", "Tall grown-up", 1.06]];
+
+const S = { // the character (starts as a realistic example the kids then change)
+  name: "", say: "", fa: "", role: "friend", kind: "girl", age: 7, height: "between",
+  skin: 2, hair: "darkbrown", hl: "none", style: "long", tex: "wavy", eyes: "green", brows: "thin",
+  glasses: "none", gcol: "red", face: ["rosy"], beard: "none", bcol: "hair",
+  top: "tshirt", tcol: "yellow", pat: "stars", pcol: "white", bottom: "jeans", bcol2: "blue", shoes: "trainers", scol: "red",
+  hat: "none", hcol: "pink", acc: [], voice: "bright", fav: "purple", pers: ["funny", "kind"], loves: "", farsi: "", vf: false, vm: false, parentOK: false };
+try { const d = JSON.parse(localStorage.getItem("ia-char-draft") || "null"); if (d && typeof d === "object") Object.assign(S, d, { parentOK: false }); } catch (e) {}
+const save = () => { try { localStorage.setItem("ia-char-draft", JSON.stringify(S)); } catch (e) {} };
+
+// ---------------------------------------------------------------- the form (built from a list of steps)
+const STEPS = [
+  { id: "name", title: "Name", fields: [
+    { k: "name", type: "text", label: "First name", hint: "Only a first name or nickname, please.", ph: "e.g. Sara" },
+    { k: "say", type: "text", label: "How do you say it? (optional)", hint: "Write it the way it sounds, like SAH-rah. At the end you'll also send voice notes of the name.", ph: "e.g. SAH-rah" },
+    { k: "fa", type: "text", label: "Name in Farsi (if you know it)", ph: "سارا", rtl: true },
+    { k: "role", type: "chips", label: "Who are they in the story?", opts: [["friend","Friend"],["cousin","Cousin"],["neighbour","Neighbour"],
+      ["classmate","Classmate"],["teacher","Teacher"],["daee","Daee (Mommy's brother)"],["khaleh","Khaleh (Mommy's sister)"],
+      ["amoo","Amoo (Daddy's brother)"],["ammeh","Ammeh (Daddy's sister)"],["other","Someone else"]] } ] },
+  { id: "body", title: "Body", fields: [
+    { k: "kind", type: "chips", label: "Girl, boy, woman or man?", opts: [["girl","Girl"],["boy","Boy"],["woman","Woman"],["man","Man"]] },
+    { k: "age", type: "age", label: "Age" },
+    { k: "height", type: "chips", label: "How tall?", hint: "Look at the picture: they stand next to Aiden (5) and Isla (8).", opts: HEIGHTS.map(h => [h[0], h[1]]) },
+    { k: "skin", type: "skin", label: "Skin colour" } ] },
+  { id: "hair", title: "Hair", fields: [
+    { k: "style", type: "chips", label: "Hair style", opts: [["bald","Bald"],["vshort","Very short"],["fringe","Short with fringe"],
+      ["shoulder","Shoulder length"],["long","Long"],["vlong","Very long"],["ponytail","Ponytail"],["pigtails","Pigtails"],["bun","Bun"],["braids","Braids"]] },
+    { k: "tex", type: "chips", label: "Straight, wavy or curly?", opts: [["straight","Straight"],["wavy","Wavy"],["curly","Curly"]] },
+    { k: "hair", type: "swatch", label: "Hair colour", pal: HAIR },
+    { k: "hl", type: "swatch", label: "Highlights", pal: HAIR, none: true } ] },
+  { id: "face", title: "Face", fields: [
+    { k: "eyes", type: "swatch", label: "Eye colour", pal: EYES },
+    { k: "brows", type: "chips", label: "Eyebrows", opts: [["thin","Thin"],["thick","Thick"]] },
+    { k: "glasses", type: "chips", label: "Glasses", opts: [["none","No glasses"],["round","Round"],["square","Square"]] },
+    { k: "gcol", type: "swatch", label: "Glasses colour", pal: COLORS, show: () => S.glasses !== "none" },
+    { k: "face", type: "multi", label: "Extras", opts: [["freckles","Freckles"],["rosy","Rosy cheeks"],["tooth","Missing tooth"]] },
+    { k: "beard", type: "chips", label: "Beard or moustache", show: () => S.kind === "man",
+      opts: [["none","None"],["stubble","Stubble"],["short","Short beard"],["long","Long beard"],["mous","Moustache"]] },
+    { k: "bcol", type: "chips", label: "Beard colour", show: () => S.kind === "man" && S.beard !== "none", opts: [["hair","Same as hair"],["grey","Grey"]] } ] },
+  { id: "clothes", title: "Clothes", fields: [
+    { k: "top", type: "chips", label: "Top", opts: [["tshirt","T-shirt"],["long","Long sleeves"],["hoodie","Hoodie"],["jumper","Jumper"],["shirt","Shirt"],["dress","Dress"]] },
+    { k: "tcol", type: "swatch", label: "Top colour", pal: COLORS },
+    { k: "pat", type: "chips", label: "Pattern", opts: [["plain","Plain"],["stripes","Stripes"],["dots","Dots"],["flowers","Flowers"],["stars","Stars"]] },
+    { k: "pcol", type: "swatch", label: "Pattern colour", pal: COLORS, show: () => S.pat !== "plain" },
+    { k: "bottom", type: "chips", label: "Bottom", show: () => S.top !== "dress",
+      opts: [["trousers","Trousers"],["jeans","Jeans"],["shorts","Shorts"],["skirt","Skirt"],["leggings","Leggings"]] },
+    { k: "bcol2", type: "swatch", label: "Bottom colour", pal: COLORS, show: () => S.top !== "dress" },
+    { k: "shoes", type: "chips", label: "Shoes", opts: [["trainers","Trainers"],["boots","Boots"],["sandals","Sandals"]] },
+    { k: "scol", type: "swatch", label: "Shoe colour", pal: COLORS } ] },
+  { id: "extras", title: "Extras", fields: [
+    { k: "hat", type: "chips", label: "On the head", opts: [["none","Nothing"],["cap","Cap"],["capback","Cap backwards"],["beanie","Beanie"],
+      ["sunhat","Sun hat"],["headband","Headband"],["clip","Hair clip"],["bow","Bow"],["scarf","Headscarf"]] },
+    { k: "hcol", type: "swatch", label: "Its colour", pal: COLORS, show: () => S.hat !== "none" },
+    { k: "acc", type: "multi", label: "Accessories", opts: [["necklace","Necklace"],["watch","Watch"],["backpack","Backpack"]] },
+    { k: "voice", type: "chips", label: "What should their voice sound like?", hint: "We'll send voice samples to choose from later.",
+      opts: [["bright","Bright and bubbly"],["calm","Calm and gentle"],["deep","Deep and warm"],["silly","Funny and bouncy"],["any","You choose"]] },
+    { k: "fav", type: "swatch", label: "Favourite colour (for their name tag)", pal: COLORS },
+    { k: "pers", type: "multi", label: "They are…", hint: "Pick up to three.", max: 3, opts: [["funny","Funny"],["kind","Kind"],["shy","Shy"],["brave","Brave"],
+      ["sporty","Sporty"],["books","Loves books"],["music","Musical"],["curious","Curious"],["silly","Silly"],["calm","Calm"]] },
+    { k: "loves", type: "text", label: "Favourite thing", ph: "e.g. cats, football, painting" },
+    { k: "farsi", type: "text", label: "Farsi words they already know", ph: "e.g. salâm, merci" } ] },
+  { id: "send", title: "Send", fields: [] },
+];
+
+const form = document.getElementById("form");
+const stepsEl = document.getElementById("steps");
+let cur = 0;
+try { const h = (location.hash || "").slice(1); const i = STEPS.findIndex(s => s.id === h); if (i >= 0) cur = i; } catch (e) {}
+
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [a, v] of Object.entries(attrs || {})) {
+    if (a === "on") for (const [ev, fn] of Object.entries(v)) e.addEventListener(ev, fn);
+    else if (a === "text") e.textContent = v; else if (v !== false && v != null) e.setAttribute(a, v === true ? "" : v);
+  }
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+
+function renderSteps() {
+  stepsEl.replaceChildren(...STEPS.map((s, i) => el("li", {}, el("button", { type: "button", "aria-current": i === cur ? "step" : false,
+    on: { click: () => go(i) } }, el("span", { class: "n", text: String(i + 1) }), s.title))));
+}
+
+function go(i) { cur = Math.max(0, Math.min(STEPS.length - 1, i)); renderSteps(); renderForm();
+  form.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }
+
+function set(k, v) { S[k] = v; save(); draw(); updateWho(); renderForm(true); }
+
+function fieldEl(f) {
+  const id = "f_" + f.k;
+  const wrap = el("div", { class: "field" });
+  const lab = f.type === "text" || f.type === "age" ? el("label", { for: id, text: f.label }) : el("div", { class: "lab", id: id + "_l", text: f.label });
+  wrap.append(lab);
+  if (f.hint) wrap.append(el("div", { class: "hint", text: f.hint }));
+  if (f.type === "text") {
+    wrap.append(el("input", { type: "text", id, value: S[f.k] || "", placeholder: f.ph || "", maxlength: 40, class: f.rtl ? "fa" : false, dir: f.rtl ? "rtl" : false,
+      on: { input: e => { S[f.k] = e.target.value; save(); updateWho(); } } }));
+  } else if (f.type === "age") {
+    const out = el("output", { id: id + "_o", text: String(S.age) });
+    const bump = d => { S.age = Math.max(1, Math.min(99, S.age + d)); out.textContent = String(S.age); save(); updateWho(); };
+    wrap.append(el("div", { class: "stepper", role: "group", "aria-label": "Age" },
+      el("button", { type: "button", "aria-label": "Younger", text: "−", on: { click: () => bump(-1) } }), out,
+      el("button", { type: "button", "aria-label": "Older", text: "+", on: { click: () => bump(1) } })));
+  } else if (f.type === "chips" || f.type === "multi") {
+    const box = el("div", { class: "chips", role: "group", "aria-labelledby": id + "_l" });
+    for (const [v, t] of f.opts) {
+      const on = f.type === "multi" ? S[f.k].includes(v) : S[f.k] === v;
+      box.append(el("button", { type: "button", class: "chip", id: id + "_" + v, "aria-pressed": on ? "true" : "false", text: t, on: { click: () => {
+        if (f.type === "multi") {
+          let a = S[f.k].slice(); a = a.includes(v) ? a.filter(x => x !== v) : (f.max && a.length >= f.max ? a.slice(1).concat(v) : a.concat(v));
+          set(f.k, a);
+        } else set(f.k, v);
+      } } }));
+    }
+    wrap.append(box);
+  } else if (f.type === "swatch" || f.type === "skin") {
+    const box = el("div", { class: "sw", role: "group", "aria-labelledby": id + "_l" });
+    if (f.none) box.append(el("button", { type: "button", class: "none", id: id + "_none", "aria-label": "None", title: "None",
+      "aria-pressed": S[f.k] === "none" ? "true" : "false", on: { click: () => set(f.k, "none") } }));
+    const entries = f.type === "skin" ? SKIN.map((c, i) => [i, c]) : Object.entries(f.pal);
+    for (const [v, c] of entries) {
+      const nm = f.type === "skin" ? "Skin " + (Number(v) + 1) : (COLOR_NAMES[v] || HAIR_NAMES[v] || EYE_NAMES[v] || v);
+      const b = el("button", { type: "button", id: id + "_" + v, "aria-label": nm, title: nm, "aria-pressed": S[f.k] === v ? "true" : "false",
+        on: { click: () => set(f.k, v) } });
+      b.style.background = c;
+      box.append(b);
+    }
+    wrap.append(box);
+  }
+  return wrap;
+}
+
+function sendStep() {
+  const kids = [];
+  kids.push(el("div", { class: "rules" }, el("b", { text: "Before you send" }), el("ul", {},
+    el("li", { text: "Only a first name. No surname, school or address." }),
+    el("li", { text: "No brand logos, football badges, cartoon characters or famous people." }),
+    el("li", { text: "Everything stays kind and kid-friendly." }))));
+  const ok = el("input", { type: "checkbox", id: "f_parentOK", checked: S.parentOK, on: { change: e => { S.parentOK = e.target.checked; renderForm(true); } } });
+  kids.push(el("label", { class: "ok", for: "f_parentOK" }, ok, el("span", { text: "A parent says it's OK to use this character in the Isla & Aiden YouTube show." })));
+  const nm = S.name.trim() || "the name";
+  kids.push(el("div", { class: "rules" }, el("b", { text: "Record the name" }),
+    el("p", { style: "margin:6px 0", text: "After you send the text, send two short WhatsApp voice notes. In each one, say “" + nm + "” twice: first slowly, then normally." }),
+    el("ul", {}, el("li", { text: "One voice note from a woman or girl." }), el("li", { text: "One voice note from a man or boy." })),
+    el("p", { style: "margin:6px 0 0", text: "Record somewhere quiet, close to the phone. One voice is fine if that's all you have." })));
+  for (const [k, t] of [["vf", "I'll send a voice note from a woman or girl"], ["vm", "I'll send a voice note from a man or boy"]]) {
+    kids.push(el("label", { class: "ok", for: "f_" + k }, el("input", { type: "checkbox", id: "f_" + k, checked: S[k],
+      on: { change: e => { S[k] = e.target.checked; save(); renderForm(true); } } }), el("span", { text: t })));
+  }
+  const text = summary();
+  const missing = !S.name.trim() ? "Add a first name in step 1 first." : (!S.parentOK ? "Tick the parent box to send." : "");
+  const status = el("div", { class: "status", id: "sendStatus", role: "status", text: missing });
+  const copyBtn = el("button", { type: "button", class: "btn big", id: "copyBtn", disabled: !!missing, text: "Copy my character",
+    on: { click: () => copyText(text, status) } });
+  const row = el("div", { class: "nav" }, copyBtn);
+  if (navigator.share && window.top === window.self) {          // a saved file opened in Safari or Chrome on a phone
+    row.append(el("button", { type: "button", class: "btn", disabled: !!missing, text: "Share (WhatsApp…)", on: { click: () => shareText(text, status) } }));
+  }
+  row.append(el("button", { type: "button", class: "btn ghost", id: "picBtn", disabled: !!missing, text: "Save picture", on: { click: () => savePicture(status) } }));
+  kids.push(el("p", { text: "Tap Copy, open WhatsApp (or a message or email), paste it and send it. Then send the picture and the voice notes." }));
+  kids.push(row, status);
+  kids.push(el("pre", { class: "code", id: "codeBox", tabindex: "0", "aria-label": "Your character as text", text }));
+  return kids;
+}
+
+function renderForm(keepScroll) {
+  const step = STEPS[cur];
+  const active = document.activeElement && document.activeElement.id;
+  const sec = el("section", { class: "step", "aria-labelledby": "stepTitle" }, el("h2", { id: "stepTitle", text: (cur + 1) + ". " + step.title }));
+  if (step.id === "send") sec.append(...sendStep());
+  else for (const f of step.fields) if (!f.show || f.show()) sec.append(fieldEl(f));
+  sec.append(el("div", { class: "nav" },
+    el("button", { type: "button", class: "btn ghost", disabled: cur === 0, text: "Back", on: { click: () => go(cur - 1) } }),
+    cur < STEPS.length - 1 ? el("button", { type: "button", class: "btn", text: "Next: " + STEPS[cur + 1].title, on: { click: () => go(cur + 1) } }) : null));
+  form.replaceChildren(sec);
+  if (keepScroll && active) { const a = document.getElementById(active); if (a) a.focus({ preventScroll: true }); }
+}
+form.addEventListener("submit", e => e.preventDefault());
+
+// ---------------------------------------------------------------- the text that comes back to the show
+const label = (k, v) => { for (const s of STEPS) for (const f of s.fields) if (f.k === k && f.opts) { const o = f.opts.find(x => x[0] === v); if (o) return o[1]; } return v; };
+function summary() {
+  const hgt = HEIGHTS.find(h => h[0] === S.height);
+  const L = [];
+  L.push("ISLA & AIDEN CHARACTER (v1)");
+  L.push("Name: " + (S.name.trim() || "?") + (S.say.trim() ? "  ·  say it: " + S.say.trim() : "") + (S.fa.trim() ? "  ·  Farsi: " + S.fa.trim() : ""));
+  L.push("Role: " + label("role", S.role) + "  ·  " + S.kind + ", age " + S.age + "  ·  height: " + (hgt ? hgt[1] : S.height));
+  L.push("Skin: tone " + (S.skin + 1) + " of 8 (" + SKIN[S.skin] + ")");
+  L.push("Hair: " + (S.style === "bald" ? "bald" : HAIR_NAMES[S.hair] + ", " + label("style", S.style).toLowerCase() + ", " + S.tex +
+    (S.hl !== "none" ? ", " + HAIR_NAMES[S.hl] + " highlights" : "")));
+  L.push("Face: " + EYE_NAMES[S.eyes] + " eyes, " + S.brows + " eyebrows" + (S.glasses !== "none" ? ", " + S.glasses + " " + COLOR_NAMES[S.gcol] + " glasses" : "") +
+    (S.face.length ? ", " + S.face.map(v => label("face", v).toLowerCase()).join(", ") : "") +
+    (S.kind === "man" && S.beard !== "none" ? ", " + label("beard", S.beard).toLowerCase() + (S.bcol === "grey" ? " (grey)" : "") : ""));
+  L.push("Top: " + label("top", S.top) + ", " + COLOR_NAMES[S.tcol] + (S.pat !== "plain" ? ", " + S.pat + " in " + COLOR_NAMES[S.pcol] : ""));
+  if (S.top !== "dress") L.push("Bottom: " + label("bottom", S.bottom) + ", " + COLOR_NAMES[S.bcol2]);
+  L.push("Shoes: " + label("shoes", S.shoes) + ", " + COLOR_NAMES[S.scol]);
+  L.push("On the head: " + (S.hat === "none" ? "nothing" : label("hat", S.hat) + ", " + COLOR_NAMES[S.hcol]) +
+    (S.acc.length ? "  ·  accessories: " + S.acc.join(", ") : ""));
+  L.push("Voice: " + label("voice", S.voice) + "  ·  favourite colour: " + COLOR_NAMES[S.fav]);
+  if (S.pers.length) L.push("Personality: " + S.pers.map(v => label("pers", v).toLowerCase()).join(", "));
+  if (S.loves.trim()) L.push("Loves: " + S.loves.trim());
+  if (S.farsi.trim()) L.push("Knows in Farsi: " + S.farsi.trim());
+  L.push("Name voice notes coming: woman/girl " + (S.vf ? "yes" : "no") + ", man/boy " + (S.vm ? "yes" : "no") + " (each says the name slowly, then normally)");
+  L.push("Parent OK: " + (S.parentOK ? "yes" : "no"));
+  const code = Object.assign({}, S); delete code.parentOK;
+  L.push("CODE " + JSON.stringify(code));
+  return L.join("\n");
+}
+
+function selectBox() { const b = document.getElementById("codeBox"); if (!b) return; const r = document.createRange(); r.selectNodeContents(b);
+  const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+function copyText(text, status) {
+  const done = () => { status.textContent = "Copied! Now paste it in WhatsApp and send it."; };
+  const fail = () => { selectBox(); status.textContent = "The text below is selected. Copy it from there and paste it in WhatsApp."; };
+  try { navigator.clipboard.writeText(text).then(done, fail); } catch (e) { fail(); }
+}
+function shareText(text, status) {
+  navigator.share({ title: "My Isla & Aiden character", text }).then(() => { status.textContent = ""; },
+    err => { if (!err || err.name !== "AbortError") status.textContent = "Sharing didn't open here. Use Copy instead."; });
+}
+
+// ---------------------------------------------------------------- drawing (48 x 80 pixel grid per person)
+const G_W = 48, G_H = 80;
+const off = document.createElement("canvas"); off.width = G_W; off.height = G_H;
+const ox = off.getContext("2d");
+const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const shade = (h, k) => "#" + hex(h).map(v => Math.max(0, Math.min(255, Math.round(v * k))).toString(16).padStart(2, "0")).join("");
+
+function figure(c, blink) {
+  const g = ox; g.clearRect(0, 0, G_W, G_H);
+  const R = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+  const P = (x, y, col) => R(x, y, 1, 1, col);
+  const skin = SKIN[c.skin] || c.skinHex, skinD = shade(skin, .86);
+  const hair = HAIR[c.hair] || "#3b2618", hairL = c.hl && c.hl !== "none" ? HAIR[c.hl] : shade(hair, 1.35);
+  const top = COLORS[c.tcol], topD = shade(top, .8), pc = COLORS[c.pcol];
+  const HX = 16, HY = 8;                                     // head origin (16 x 16)
+  const long = { shoulder: 28, long: 40, vlong: 52 }[c.style];
+  const bald = c.style === "bald", scarf = c.hat === "scarf";
+
+  // hair behind the body (long styles), headscarf drape
+  if (scarf) R(14, 20, 20, 10, COLORS[c.hcol]);
+  else if (long && !bald) { R(14, 22, 4, long - 22, hair); R(30, 22, 4, long - 22, hair); }
+
+  // legs + bottoms + shoes
+  const legC = c.top === "dress" ? skin : (c.bottom === "skirt" ? skin : COLORS[c.bcol2]);
+  R(16, 48, 16, 24, legC);
+  R(24, 48, 1, 24, shade(legC, .85));
+  if (c.top !== "dress") {
+    if (c.bottom === "shorts") { R(16, 56, 16, 16, skin); R(16, 48, 16, 8, COLORS[c.bcol2]); R(24, 48, 1, 8, shade(COLORS[c.bcol2], .8)); }
+    if (c.bottom === "jeans") { for (let y = 48; y < 72; y += 3) { P(18, y, shade(COLORS[c.bcol2], 1.2)); P(29, y + 1, shade(COLORS[c.bcol2], 1.2)); } R(16, 48, 16, 1, "#8a6a2a"); }
+    if (c.bottom === "skirt") { R(15, 48, 18, 4, COLORS[c.bcol2]); R(14, 52, 20, 6, COLORS[c.bcol2]); R(14, 57, 20, 1, shade(COLORS[c.bcol2], .8)); }
+  }
+  const sc = COLORS[c.scol];
+  if (c.shoes === "boots") { R(16, 64, 16, 8, sc); R(24, 64, 1, 8, shade(sc, .8)); }
+  else if (c.shoes === "sandals") { R(16, 69, 16, 1, sc); R(16, 71, 16, 1, sc); }
+  else { R(16, 68, 16, 4, sc); R(16, 71, 16, 1, "#f2f2ee"); R(24, 68, 1, 4, shade(sc, .8)); }
+
+  // body
+  R(16, 24, 16, 24, top);
+  const pattern = (x0, y0, w, h) => {
+    if (c.pat === "plain") return;
+    for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) {
+      const dx = x - x0, dy = y - y0;
+      if (c.pat === "stripes" && dy % 6 < 2) P(x, y, pc);
+      if (c.pat === "dots" && dx % 5 === 2 && dy % 5 === 2) P(x, y, pc);
+      if (c.pat === "flowers" && dx % 7 === 3 && dy % 7 === 3) { P(x, y, "#f6cf3a"); P(x - 1, y, pc); P(x + 1, y, pc); P(x, y - 1, pc); P(x, y + 1, pc); }
+      if (c.pat === "stars" && dx % 8 === 4 && dy % 8 === 4) { P(x, y, pc); P(x - 1, y, pc); P(x + 1, y, pc); P(x, y - 1, pc); P(x, y + 1, pc); }
+    }
+  };
+  pattern(16, 26, 16, 22);
+  if (c.top === "dress") { R(14, 48, 20, 12, top); pattern(14, 48, 20, 12); R(14, 59, 20, 1, topD); }
+  if (c.top === "shirt") { R(20, 24, 3, 3, "#f4f4f2"); R(25, 24, 3, 3, "#f4f4f2"); for (let y = 28; y < 47; y += 4) P(24, y, topD); }
+  if (c.top === "hoodie") { R(18, 24, 12, 2, topD); R(19, 38, 10, 6, topD); P(22, 26, "#f4f4f2"); P(22, 27, "#f4f4f2"); P(26, 26, "#f4f4f2"); P(26, 27, "#f4f4f2"); }
+  if (c.top === "jumper") { R(16, 46, 16, 2, topD); R(20, 24, 8, 1, topD); }
+  if (c.top === "tshirt" || c.top === "dress") R(21, 24, 6, 2, skin);       // neck
+  if (c.acc.includes("necklace")) { for (let i = 0; i < 7; i++) P(20 + i, 26 + Math.round(Math.abs(3 - i) < 3 ? 2 - Math.abs(3 - i) * .6 : 0), "#e8b93a"); }
+  if (c.acc.includes("backpack")) { R(18, 24, 2, 14, "#5a3c22"); R(28, 24, 2, 14, "#5a3c22"); }
+
+  // arms
+  const sleeveLong = ["long", "hoodie", "jumper", "shirt"].includes(c.top);
+  for (const ax of [8, 32]) {
+    R(ax, 24, 8, 24, skin);
+    if (sleeveLong) { R(ax, 24, 8, 22, top); if (c.top === "jumper") R(ax, 44, 8, 2, topD); }
+    else R(ax, 24, 8, 7, top);
+    R(ax, 46, 8, 2, skinD);
+  }
+  if (c.acc.includes("watch")) R(32, 43, 8, 2, "#2b2b2e");
+
+  // head
+  R(HX, HY, 16, 16, skin);
+  const curly = c.tex === "curly", wavy = c.tex === "wavy";
+  if (!bald) {
+    const rows = { vshort: 2, fringe: 4 }[c.style] ?? 3;
+    R(HX, HY, 16, rows, hair);
+    if (c.style === "fringe") { for (let x = 0; x < 16; x += 2) P(HX + x, HY + 4, hair); }
+    const side = { vshort: 5, fringe: 7 }[c.style] ?? 16;
+    R(HX, HY, 2, side, hair); R(HX + 14, HY, 2, side, hair);
+    for (let x = 0; x < 16; x++) if ((x * 7) % 5 === 1) P(HX + x, HY + (x % 2), hairL);         // shine
+    if (curly) { R(HX - 1, HY - 1, 18, 2, hair); R(HX - 1, HY, 1, side, hair); R(HX + 16, HY, 1, side, hair);
+      for (let i = 0; i < 18; i += 3) { P(HX - 1 + i, HY - 1, hairL); } }
+    if (wavy && side > 8) for (let y = 4; y < side; y += 3) { P(HX + 2, HY + y, hair); P(HX + 13, HY + y, hair); }
+    if (c.style === "ponytail") { R(HX + 16, HY + 2, 2, 2, COLORS[c.hcol] || "#d8352f"); R(HX + 17, HY + 4, 3, 10, hair); R(HX + 18, HY + 14, 2, 3, hair); }
+    if (c.style === "pigtails") { R(HX - 4, HY + 4, 4, 9, hair); R(HX + 16, HY + 4, 4, 9, hair); R(HX - 2, HY + 4, 2, 1, "#d8352f"); R(HX + 16, HY + 4, 2, 1, "#d8352f"); }
+    if (c.style === "bun") { R(HX + 5, HY - 4, 6, 4, hair); P(HX + 6, HY - 4, hairL); }
+    if (c.style === "braids") { for (const bx of [17, 29]) for (let y = 24; y < 44; y += 2) { R(bx, y, 2, 1, hair); P(bx + (y % 4 ? 0 : 1), y + 1, hairL); } }
+  }
+  // brows, eyes, nose, cheeks, mouth
+  const brow = c.kind === "man" && c.bcol === "grey" ? "#9a9a9e" : (bald ? "#6b4a30" : hair);
+  R(HX + 2, HY + 6, 4, 1, brow); R(HX + 10, HY + 6, 4, 1, brow);
+  if (c.brows === "thick") { R(HX + 2, HY + 5, 4, 1, brow); R(HX + 10, HY + 5, 4, 1, brow); }
+  if (blink) { R(HX + 3, HY + 9, 3, 1, "#3a2a20"); R(HX + 10, HY + 9, 3, 1, "#3a2a20"); }
+  else {
+    const iris = EYES[c.eyes] || "#3a2a20";
+    R(HX + 3, HY + 8, 2, 2, "#fbfbf8"); R(HX + 5, HY + 8, 1, 2, iris);
+    R(HX + 11, HY + 8, 2, 2, "#fbfbf8"); R(HX + 10, HY + 8, 1, 2, iris);
+  }
+  if (c.glasses !== "none") {
+    const gc = COLORS[c.gcol];
+    for (const gx of [2, 9]) {
+      R(HX + gx, HY + 7, 5, 1, gc); R(HX + gx, HY + 10, 5, 1, gc); R(HX + gx, HY + 7, 1, 4, gc); R(HX + gx + 4, HY + 7, 1, 4, gc);
+      if (c.glasses === "round") { P(HX + gx, HY + 7, skin); P(HX + gx + 4, HY + 7, skin); P(HX + gx, HY + 10, skin); P(HX + gx + 4, HY + 10, skin); }
+    }
+    R(HX + 7, HY + 8, 2, 1, gc);
+  }
+  R(HX + 7, HY + 11, 2, 1, skinD);
+  if (c.face.includes("rosy")) { R(HX + 2, HY + 12, 2, 1, "#f09a9a"); R(HX + 12, HY + 12, 2, 1, "#f09a9a"); }
+  if (c.face.includes("freckles")) for (const [x, y] of [[4, 11], [3, 12], [5, 12], [11, 11], [12, 12], [10, 12]]) P(HX + x, HY + y, shade(skin, .72));
+  const lip = "#a4434a";
+  P(HX + 4, HY + 13, lip); P(HX + 11, HY + 13, lip); R(HX + 5, HY + 14, 6, 1, "#fbf8f2"); P(HX + 4, HY + 14, lip); P(HX + 11, HY + 14, lip); R(HX + 5, HY + 15, 6, 1, lip);
+  if (c.face.includes("tooth")) P(HX + 7, HY + 14, "#3a2020");
+  if (c.kind === "man" && c.beard !== "none") {
+    const bc = c.bcol === "grey" ? "#9a9a9e" : hair;
+    if (c.beard === "stubble") for (let x = 1; x < 15; x += 2) for (let y = 12; y < 16; y += 2) P(HX + x + (y % 4 ? 1 : 0), HY + y, shade(skin, .62));
+    if (c.beard === "short" || c.beard === "long") { R(HX, HY + 12, 4, 4, bc); R(HX + 12, HY + 12, 4, 4, bc); R(HX + 4, HY + 15, 8, 1, bc); R(HX + 5, HY + 12, 6, 1, bc); }
+    if (c.beard === "long") R(HX + 3, HY + 16, 10, 7, bc);
+    if (c.beard === "mous") R(HX + 4, HY + 12, 8, 1, bc);
+  }
+  // on the head
+  const hc = COLORS[c.hcol];
+  if (c.hat === "cap") { R(HX, HY - 1, 16, 4, hc); R(HX - 1, HY + 3, 18, 1, shade(hc, .75)); R(HX + 7, HY - 1, 2, 1, shade(hc, .8)); }
+  if (c.hat === "capback") { R(HX, HY - 1, 16, 4, hc); R(HX + 6, HY + 2, 4, 1, shade(hc, .75)); }
+  if (c.hat === "beanie") { R(HX, HY - 2, 16, 6, hc); R(HX, HY + 3, 16, 1, shade(hc, .75)); R(HX + 6, HY - 5, 4, 3, "#f4f4f2"); }
+  if (c.hat === "sunhat") { R(HX + 1, HY - 3, 14, 4, hc); R(HX - 5, HY + 1, 26, 2, hc); R(HX + 1, HY, 14, 1, shade(hc, .75)); }
+  if (c.hat === "headband") R(HX, HY + 3, 16, 1, hc);
+  if (c.hat === "clip") R(HX + 12, HY + 3, 3, 2, hc);
+  if (c.hat === "bow") { R(HX + 10, HY - 2, 3, 3, hc); R(HX + 14, HY - 2, 3, 3, hc); R(HX + 13, HY - 1, 1, 1, shade(hc, .7)); }
+  if (scarf) { R(HX - 1, HY - 1, 18, 4, hc); R(HX - 1, HY, 2, 17, hc); R(HX + 15, HY, 2, 17, hc); R(HX + 1, HY + 15, 14, 2, hc); }
+  return off;
+}
+
+const ISLA = { skin: 0, skinHex: "#eec7ac", hair: "black", hl: "none", style: "long", tex: "straight", eyes: "brown", brows: "thin", glasses: "square", gcol: "navy",
+  face: [], kind: "girl", beard: "none", top: "dress", tcol: "blue", pat: "dots", pcol: "white", bottom: "jeans", bcol2: "blue", shoes: "sandals", scol: "white",
+  hat: "none", hcol: "red", acc: [] };
+const AIDEN = { skin: 1, hair: "brown", hl: "none", style: "fringe", tex: "straight", eyes: "darkbrown", brows: "thin", glasses: "none", gcol: "red",
+  face: [], kind: "boy", beard: "none", top: "tshirt", tcol: "lightblue", pat: "plain", pcol: "white", bottom: "shorts", bcol2: "navy", shoes: "trainers", scol: "white",
+  hat: "none", hcol: "red", acc: [] };
+
+const stage = document.getElementById("stage");
+const sx = stage.getContext("2d");
+let blinkOn = false;
+function themeVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#79b14a"; }
+function draw() {
+  const W = stage.width, H = stage.height, ground = H - 50, K = 5.2;          // K = screen pixels per grid pixel at full size
+  sx.imageSmoothingEnabled = false;
+  sx.clearRect(0, 0, W, H);
+  sx.fillStyle = themeVar("--grass"); sx.fillRect(0, ground, W, H - ground);
+  sx.fillStyle = "rgba(0,0,0,.12)"; for (let x = 0; x < W; x += 16) sx.fillRect(x, ground, 8, 6);
+  const scale = (HEIGHTS.find(h => h[0] === S.height) || HEIGHTS[2])[2];
+  const people = [[AIDEN, .76, 110, "Aiden (5)"], [S, scale, W / 2, null], [ISLA, .9, W - 110, "Isla (8)"]];
+  for (const [p, sc, cx, tag] of people) {
+    const img = figure(p, p === S && blinkOn);
+    const w = G_W * K * sc, h = G_H * K * sc;
+    sx.globalAlpha = tag ? .82 : 1;
+    sx.drawImage(img, Math.round(cx - w / 2), Math.round(ground - h + 8 * K * sc), Math.round(w), Math.round(h));
+    sx.globalAlpha = 1;
+    if (tag) { sx.font = "bold 20px 'Baloo 2', sans-serif"; sx.textAlign = "center"; sx.fillStyle = "rgba(0,0,0,.65)"; sx.fillText(tag, cx, H - 16); }
+    else { sx.font = "22px Silkscreen, monospace"; sx.textAlign = "center"; sx.fillStyle = COLORS[S.fav] || "#fff";
+      sx.strokeStyle = "rgba(0,0,0,.7)"; sx.lineWidth = 5; const nm = (S.name.trim() || "You").slice(0, 14);
+      sx.strokeText(nm, cx, H - 16); sx.fillText(nm, cx, H - 16); }
+  }
+}
+function updateWho() {
+  document.getElementById("whoName").textContent = S.name.trim() || "New friend";
+  document.getElementById("whoLine").textContent = S.kind + " · age " + S.age;
+  draw();
+}
+
+// a picture to send along with the text
+function cardBlob() {
+  const c = document.createElement("canvas"); c.width = 720; c.height = 900; const g = c.getContext("2d"); g.imageSmoothingEnabled = false;
+  g.fillStyle = "#2b2016"; g.fillRect(0, 0, 720, 900); g.fillStyle = "#c6985a"; g.fillRect(14, 14, 692, 872); g.fillStyle = "#fffaf0"; g.fillRect(30, 30, 660, 840);
+  g.fillStyle = "#bfe3f6"; g.fillRect(60, 120, 600, 560); g.fillStyle = "#79b14a"; g.fillRect(60, 620, 600, 60);
+  const img = figure(S, false); const sc = (HEIGHTS.find(h => h[0] === S.height) || HEIGHTS[2])[2], K = 6.4;   // the tallest grown-up still fits
+  g.drawImage(img, 360 - G_W * K * sc / 2, 620 - G_H * K * sc + 8 * K * sc, G_W * K * sc, G_H * K * sc);
+  g.textAlign = "center";
+  g.fillStyle = COLORS[S.fav] || "#1f5ea8"; g.font = "56px Silkscreen, monospace"; g.fillText((S.name.trim() || "New friend").slice(0, 16), 360, 760);
+  g.fillStyle = "#7a6650"; g.font = "bold 28px 'Baloo 2', sans-serif"; g.fillText(label("role", S.role) + "  ·  " + S.kind + ", age " + S.age, 360, 812);
+  g.fillStyle = "#7a6650"; g.font = "bold 20px 'Baloo 2', sans-serif"; g.fillText("Hamboo Learn Farsi YouTube Channel", 360, 856);
+  return new Promise(r => c.toBlob(r, "image/png"));
+}
+let downloads = null;
+if (window.claude && typeof window.claude.use === "function") window.claude.use("downloads").then(d => { downloads = d; }).catch(() => {});
+async function savePicture(status) {
+  const blob = await cardBlob(); const fn = "IslaAiden_" + (S.name.trim() || "character").replace(/[^A-Za-z0-9]+/g, "_") + ".png";
+  if (window.claude && typeof window.claude.use === "function") {                 // inside the Claude viewer
+    if (!downloads) { status.textContent = "Saving a picture isn't available here. Take a screenshot instead."; return; }
+    try { await downloads.save({ filename: fn, data: blob }); status.textContent = "Picture ready. Send it with your text."; }
+    catch (e) { status.textContent = e && e.code === "declined" ? "" : "Saving a picture isn't available here. Take a screenshot instead."; }
+    return;
+  }
+  const file = new File([blob], fn, { type: "image/png" });                       // a saved copy of this page
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: "My Isla & Aiden character" }); return; } catch (e) { if (e && e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = fn; document.body.append(a); a.click(); a.remove();
+  status.textContent = "Picture saved.";
+}
+
+// gentle blink
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  setInterval(() => { blinkOn = true; draw(); setTimeout(() => { blinkOn = false; draw(); }, 140); }, 3400);
+}
+const mq = matchMedia("(prefers-color-scheme: dark)"); if (mq.addEventListener) mq.addEventListener("change", draw);
+new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+
+renderSteps(); renderForm(); updateWho();
+})();
+</script>
+
+</body></html>
