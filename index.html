@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head><body>
-<title>Isla &amp; Aiden Character Maker</title>
+<title>Hamboo Character Maker</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Baloo+2:wght@500;700&display=swap">
@@ -92,10 +92,10 @@ pre.code { background: var(--bg); border: 3px solid var(--line); padding: 10px; 
 @media (prefers-reduced-motion: reduce) { .btn:active:not(:disabled) { transform: none } }
 </style>
 
-<div id="noRun" style="max-width:640px;margin:0 auto 16px;padding:14px 16px;border:4px solid #2b2016;background:#ffd84a;color:#2b2016;font-size:18px;line-height:1.45"><b>This preview can't run the Character Maker.</b><br>On an iPhone, files opened from WhatsApp or Files show only a preview. Open this link in Safari instead:<br><b style="word-break:break-all">https://claude.ai/artifact/5t4gFF7jvT12G4zRYyypf4</b><br>(Press and hold the link, then Copy, and paste it into Safari.)</div>
+<div id="noRun" style="max-width:640px;margin:0 auto 16px;padding:14px 16px;border:4px solid #2b2016;background:#ffd84a;color:#2b2016;font-size:18px;line-height:1.45"><b>This preview can't run the Character Maker.</b><br>On an iPhone, files opened from WhatsApp or Files show only a preview. Open the Character Maker <b>link</b> you were sent instead, so it opens in Safari.</div>
 <header class="top">
-  <h1>Isla &amp; Aiden <span>Character Maker</span></h1>
-  <p class="tag">Make a new friend for the show. Pick everything, then send it back.</p>
+  <h1>Hamboo <span>Character Maker</span></h1>
+  <p class="tag">Make a new friend for Isla &amp; Aiden show. Pick everything, then send it back.</p>
 </header>
 
 <div class="wrap">
@@ -136,6 +136,7 @@ const S = { // the character (starts as a realistic example the kids then change
   top: "tshirt", tcol: "yellow", pat: "stars", pcol: "white", bottom: "jeans", bcol2: "blue", shoes: "trainers", scol: "red",
   hat: "none", hcol: "pink", acc: [], voice: "bright", fav: "purple", pers: ["funny", "kind"], loves: "", farsi: "", vf: false, vm: false, parentOK: false };
 try { const d = JSON.parse(localStorage.getItem("ia-char-draft") || "null"); if (d && typeof d === "object") Object.assign(S, d, { parentOK: false }); } catch (e) {}
+if (S.hat === "scarf") S.hat = "none";                       // option removed
 const save = () => { try { localStorage.setItem("ia-char-draft", JSON.stringify(S)); } catch (e) {} };
 
 // ---------------------------------------------------------------- the form (built from a list of steps)
@@ -144,7 +145,7 @@ const STEPS = [
     { k: "name", type: "text", label: "First name", hint: "Only a first name or nickname, please.", ph: "e.g. Sara" },
     { k: "say", type: "text", label: "How do you say it? (optional)", hint: "Write it the way it sounds, like SAH-rah. At the end you'll also send voice notes of the name.", ph: "e.g. SAH-rah" },
     { k: "fa", type: "text", label: "Name in Farsi (if you know it)", ph: "سارا", rtl: true },
-    { k: "role", type: "chips", label: "Who are they in the story?", opts: [["friend","Friend"],["cousin","Cousin"],["neighbour","Neighbour"],
+    { k: "role", type: "chips", label: "What is the relationship of your new character to Isla and Aiden?", opts: [["friend","Friend"],["cousin","Cousin"],["neighbour","Neighbour"],
       ["classmate","Classmate"],["teacher","Teacher"],["daee","Daee (Mommy's brother)"],["khaleh","Khaleh (Mommy's sister)"],
       ["amoo","Amoo (Daddy's brother)"],["ammeh","Ammeh (Daddy's sister)"],["other","Someone else"]] } ] },
   { id: "body", title: "Body", fields: [
@@ -179,7 +180,7 @@ const STEPS = [
     { k: "scol", type: "swatch", label: "Shoe colour", pal: COLORS } ] },
   { id: "extras", title: "Extras", fields: [
     { k: "hat", type: "chips", label: "On the head", opts: [["none","Nothing"],["cap","Cap"],["capback","Cap backwards"],["beanie","Beanie"],
-      ["sunhat","Sun hat"],["headband","Headband"],["clip","Hair clip"],["bow","Bow"],["scarf","Headscarf"]] },
+      ["sunhat","Sun hat"],["headband","Headband"],["clip","Hair clip"],["bow","Bow"]] },
     { k: "hcol", type: "swatch", label: "Its colour", pal: COLORS, show: () => S.hat !== "none" },
     { k: "acc", type: "multi", label: "Accessories", opts: [["necklace","Necklace"],["watch","Watch"],["backpack","Backpack"]] },
     { k: "voice", type: "chips", label: "What should their voice sound like?", hint: "We'll send voice samples to choose from later.",
