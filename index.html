@@ -143,7 +143,7 @@ const save = () => { try { localStorage.setItem("ia-char-draft", JSON.stringify(
 const STEPS = [
   { id: "name", title: "Name", fields: [
     { k: "name", type: "text", label: "First name", hint: "Only a first name or nickname, please.", ph: "e.g. Sara" },
-    { k: "say", type: "text", label: "How do you say it? (optional)", hint: "Write it the way it sounds, like SAH-rah. At the end you'll also send voice notes of the name.", ph: "e.g. SAH-rah" },
+    { k: "say", type: "text", label: "How do you say it? (optional)", hint: "Write it the way it sounds, like SAH-rah. If the name is unusual, you can also send voice notes of it (optional).", ph: "e.g. SAH-rah" },
     { k: "fa", type: "text", label: "Name in Farsi (if you know it)", ph: "سارا", rtl: true },
     { k: "role", type: "chips", label: "What is the relationship of your new character to Isla and Aiden?", opts: [["friend","Friend"],["cousin","Cousin"],["neighbour","Neighbour"],
       ["classmate","Classmate"],["teacher","Teacher"],["daee","Daee (Mommy's brother)"],["khaleh","Khaleh (Mommy's sister)"],
@@ -271,8 +271,8 @@ function sendStep() {
   const ok = el("input", { type: "checkbox", id: "f_parentOK", checked: S.parentOK, on: { change: e => { S.parentOK = e.target.checked; renderForm(true); } } });
   kids.push(el("label", { class: "ok", for: "f_parentOK" }, ok, el("span", { text: "A parent says it's OK to use this character in the Isla & Aiden YouTube show." })));
   const nm = S.name.trim() || "the name";
-  kids.push(el("div", { class: "rules" }, el("b", { text: "Record the name" }),
-    el("p", { style: "margin:6px 0", text: "After you send the text, send two short WhatsApp voice notes. In each one, say “" + nm + "” twice: first slowly, then normally." }),
+  kids.push(el("div", { class: "rules" }, el("b", { text: "Record the name if it is unique (optional)" }),
+    el("p", { style: "margin:6px 0", text: "If the name is unusual, record two short voice notes and attach them to your email. In each one, say “" + nm + "” twice: first slowly, then normally." }),
     el("ul", {}, el("li", { text: "One voice note from a woman or girl." }), el("li", { text: "One voice note from a man or boy." })),
     el("p", { style: "margin:6px 0 0", text: "Record somewhere quiet, close to the phone. One voice is fine if that's all you have." })));
   for (const [k, t] of [["vf", "I'll send a voice note from a woman or girl"], ["vm", "I'll send a voice note from a man or boy"]]) {
@@ -286,10 +286,10 @@ function sendStep() {
     on: { click: () => copyText(text, status) } });
   const row = el("div", { class: "nav" }, copyBtn);
   if (navigator.share && window.top === window.self) {          // a saved file opened in Safari or Chrome on a phone
-    row.append(el("button", { type: "button", class: "btn", disabled: !!missing, text: "Share (WhatsApp…)", on: { click: () => shareText(text, status) } }));
+    row.append(el("button", { type: "button", class: "btn", disabled: !!missing, text: "Share (email HambooFarsi@gmail.com)", on: { click: () => shareText(text, status) } }));
   }
   row.append(el("button", { type: "button", class: "btn ghost", id: "picBtn", disabled: !!missing, text: "Save picture", on: { click: () => savePicture(status) } }));
-  kids.push(el("p", { text: "Tap Copy, open WhatsApp (or a message or email), paste it and send it. Then send the picture and the voice notes." }));
+  kids.push(el("p", { text: "Tap “Copy my character”, open an email to HambooFarsi@gmail.com, paste the text and send it. If you saved the voices, attach them to the same email for better pronunciation of unique names, but that is optional." }));
   kids.push(row, status);
   kids.push(el("pre", { class: "code", id: "codeBox", tabindex: "0", "aria-label": "Your character as text", text }));
   return kids;
@@ -342,8 +342,8 @@ function summary() {
 function selectBox() { const b = document.getElementById("codeBox"); if (!b) return; const r = document.createRange(); r.selectNodeContents(b);
   const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
 function copyText(text, status) {
-  const done = () => { status.textContent = "Copied! Now paste it in WhatsApp and send it."; };
-  const fail = () => { selectBox(); status.textContent = "The text below is selected. Copy it from there and paste it in WhatsApp."; };
+  const done = () => { status.textContent = "Copied! Now paste it in an email to HambooFarsi@gmail.com and send it."; };
+  const fail = () => { selectBox(); status.textContent = "The text below is selected. Copy it from there and paste it in an email to HambooFarsi@gmail.com."; };
   try { navigator.clipboard.writeText(text).then(done, fail); } catch (e) { fail(); }
 }
 function shareText(text, status) {
